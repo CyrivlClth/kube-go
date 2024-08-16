@@ -1,0 +1,28 @@
+global:
+  namespace: dev-environment
+
+appConfig:
+  maxCpuCount: 2
+  maxMemoryGB: 2
+  javaPreCmd:
+    - tini
+    - java
+  javaArgs:
+    - -jar
+    - ./app.jar
+  overrideNode: {}
+  nodeSelector: {}
+  gatewayName: gateway-service
+  gatewayNodePort: 9000
+  hostPort: 31000
+  replicas: 0
+
+apps:
+  - name: demo-service
+    image: adf
+    tag: v1
+    maxCpuCount: 2
+    maxMemoryGB: 2
+    javaArgs: []
+    nodeSelector: {}
+    replicas: 1
