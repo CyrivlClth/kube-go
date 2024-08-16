@@ -10,7 +10,7 @@ appConfig:
   javaArgs:
     - -jar
     - ./app.jar
-  overrideNode: {}
+  overrideNode: false
   nodeSelector: {}
   gatewayName: gateway-service
   gatewayNodePort: 9000
