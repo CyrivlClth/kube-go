@@ -1,13 +1,13 @@
 global:
   namespace: dev-environment
 
-appConfig:
+envConfig:
   maxCpuCount: 2
   maxMemoryGB: 2
-  javaPreCmd:
+  preCmd:
     - tini
     - java
-  javaArgs:
+  postCmd:
     - -jar
     - ./app.jar
   overrideNode: false

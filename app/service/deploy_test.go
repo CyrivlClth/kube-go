@@ -15,7 +15,7 @@ func TestDeploy_load(t *testing.T) {
 	d := NewDeploy(db.Debug())
 	err = d.load("examples/values.yaml")
 	assert.NoError(t, err)
-	conf := model.AppConfig{}
+	conf := model.EnvConfig{}
 	assert.NoError(t, db.Where("file_name=?", "values.yaml").First(&conf).Error)
 	assert.EqualValues(t, "values.yaml", conf.FileName)
 }

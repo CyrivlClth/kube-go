@@ -15,7 +15,7 @@ type Deploy struct {
 }
 
 func NewDeploy(db *gorm.DB) *Deploy {
-	err := db.AutoMigrate(&model.AppConfig{})
+	err := db.AutoMigrate(&model.AppConfig{}, &model.EnvConfig{})
 	if err != nil {
 		panic(err)
 	}
@@ -32,14 +32,14 @@ func (d Deploy) load(path string) error {
 		return err
 	}
 	conf := struct {
-		AppConfig model.AppConfig `yaml:"appConfig"`
+		EnvConfig model.EnvConfig `yaml:"envConfig"`
 	}{}
 	err = yaml.Unmarshal(b, &conf)
 	if err != nil {
 		return err
 	}
-	_, conf.AppConfig.FileName = filepath.Split(root)
-	err = d.db.Create(&(conf.AppConfig)).Error
+	_, conf.EnvConfig.FileName = filepath.Split(root)
+	err = d.db.Create(&(conf.EnvConfig)).Error
 
 	return err
 }
