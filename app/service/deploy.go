@@ -26,7 +26,7 @@ func NewDeploy(db *gorm.DB) *Deploy {
 	}
 }
 
-func (d Deploy) load(path string) error {
+func (d Deploy) Load(path string) error {
 	root, _ := filepath.Abs(path)
 	log.Println(root)
 	b, err := os.ReadFile(root)
@@ -62,11 +62,11 @@ type App struct {
 	Tag          string         `yaml:"tag"`
 }
 
-func (d Deploy) addApp(app *model.AppConfig) error {
+func (d Deploy) AddApp(app *model.AppConfig) error {
 	return d.db.Create(app).Error
 }
 
-func (d Deploy) deployApp(dp *model.AppDeploy) error {
+func (d Deploy) DeployApp(dp *model.AppDeploy) error {
 	app := model.AppConfig{}
 	err := d.db.Where("name=?", dp.AppName).First(&app).Error
 	if err != nil {
@@ -84,7 +84,7 @@ func (d Deploy) deployApp(dp *model.AppDeploy) error {
 	return nil
 }
 
-func (d Deploy) exportEnv(envName string) error {
+func (d Deploy) ExportEnv(envName string) error {
 	env := model.EnvConfig{}
 	err := d.db.Where("file_name=?", envName).First(&env).Error
 	if err != nil {

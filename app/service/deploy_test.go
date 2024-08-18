@@ -13,7 +13,7 @@ func TestDeploy_load(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
 	d := NewDeploy(db.Debug())
-	err = d.load("examples/values.yaml")
+	err = d.Load("examples/values.yaml")
 	assert.NoError(t, err)
 	conf := model.EnvConfig{}
 	assert.NoError(t, db.Where("file_name=?", "values.yaml").First(&conf).Error)
@@ -24,7 +24,7 @@ func TestDeploy_exportEnv(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
 	d := NewDeploy(db.Debug())
-	err = d.load("examples/values.yaml")
+	err = d.Load("examples/values.yaml")
 	assert.NoError(t, err)
 	conf := model.EnvConfig{}
 	assert.NoError(t, db.Where("file_name=?", "values.yaml").First(&conf).Error)
@@ -44,13 +44,13 @@ func TestDeploy_exportEnv(t *testing.T) {
 			Replicas: 3,
 		},
 	}
-	assert.NoError(t, d.addApp(&app))
+	assert.NoError(t, d.AddApp(&app))
 	dp := model.AppDeploy{
 		AppName: app.Name,
 		EnvName: conf.FileName,
 		Image:   "nginx-alpine",
 		Tag:     "v2",
 	}
-	assert.NoError(t, d.deployApp(&dp))
-	assert.NoError(t,d.exportEnv(conf.FileName))
+	assert.NoError(t, d.DeployApp(&dp))
+	assert.NoError(t, d.ExportEnv(conf.FileName))
 }
