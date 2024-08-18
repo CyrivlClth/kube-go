@@ -32,11 +32,6 @@ func (m *DatabaseMap) Scan(value interface{}) error {
 	return json.Unmarshal(b, m)
 }
 
-// GormDataType 指定 GORM 使用的数据库类型
-func (m *DatabaseMap) GormDataType() string {
-	return "json"
-}
-
 // DataStrings 自定义类型，用于存储字符串切片到 JSON 字符串
 type DataStrings []string
 
@@ -60,9 +55,4 @@ func (s *DataStrings) Scan(value interface{}) error {
 
 	// 解码 JSON 到字符串切片
 	return json.Unmarshal(b, s)
-}
-
-// GormDataType 指定 GORM 使用的数据库类型
-func (s DataStrings) GormDataType() string {
-	return "json"
 }
