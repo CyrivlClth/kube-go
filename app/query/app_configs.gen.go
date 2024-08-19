@@ -27,7 +27,6 @@ func newAppConfig(db *gorm.DB, opts ...gen.DOOption) appConfig {
 
 	tableName := _appConfig.appConfigDo.TableName()
 	_appConfig.ALL = field.NewAsterisk(tableName)
-	_appConfig.Name = field.NewString(tableName, "name")
 	_appConfig.MaxCPUCount = field.NewInt(tableName, "max_cpu_count")
 	_appConfig.MaxMemoryGB = field.NewInt(tableName, "max_memory_gb")
 	_appConfig.Description = field.NewString(tableName, "description")
@@ -36,7 +35,8 @@ func newAppConfig(db *gorm.DB, opts ...gen.DOOption) appConfig {
 	_appConfig.PostCmd = field.NewField(tableName, "post_cmd")
 	_appConfig.NodeSelector = field.NewField(tableName, "node_selector")
 	_appConfig.Replicas = field.NewInt(tableName, "replicas")
-	_appConfig.Deploy = appConfigHasOneDeploy{
+	_appConfig.Name = field.NewString(tableName, "name")
+	_appConfig.Deploy = appConfigHasManyDeploy{
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("Deploy", "model.AppDeploy"),
@@ -51,7 +51,6 @@ type appConfig struct {
 	appConfigDo
 
 	ALL          field.Asterisk
-	Name         field.String
 	MaxCPUCount  field.Int
 	MaxMemoryGB  field.Int
 	Description  field.String
@@ -60,7 +59,8 @@ type appConfig struct {
 	PostCmd      field.Field
 	NodeSelector field.Field
 	Replicas     field.Int
-	Deploy       appConfigHasOneDeploy
+	Name         field.String
+	Deploy       appConfigHasManyDeploy
 
 	fieldMap map[string]field.Expr
 }
@@ -77,7 +77,6 @@ func (a appConfig) As(alias string) *appConfig {
 
 func (a *appConfig) updateTableName(table string) *appConfig {
 	a.ALL = field.NewAsterisk(table)
-	a.Name = field.NewString(table, "name")
 	a.MaxCPUCount = field.NewInt(table, "max_cpu_count")
 	a.MaxMemoryGB = field.NewInt(table, "max_memory_gb")
 	a.Description = field.NewString(table, "description")
@@ -86,6 +85,7 @@ func (a *appConfig) updateTableName(table string) *appConfig {
 	a.PostCmd = field.NewField(table, "post_cmd")
 	a.NodeSelector = field.NewField(table, "node_selector")
 	a.Replicas = field.NewInt(table, "replicas")
+	a.Name = field.NewString(table, "name")
 
 	a.fillFieldMap()
 
@@ -103,7 +103,6 @@ func (a *appConfig) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 
 func (a *appConfig) fillFieldMap() {
 	a.fieldMap = make(map[string]field.Expr, 10)
-	a.fieldMap["name"] = a.Name
 	a.fieldMap["max_cpu_count"] = a.MaxCPUCount
 	a.fieldMap["max_memory_gb"] = a.MaxMemoryGB
 	a.fieldMap["description"] = a.Description
@@ -112,6 +111,7 @@ func (a *appConfig) fillFieldMap() {
 	a.fieldMap["post_cmd"] = a.PostCmd
 	a.fieldMap["node_selector"] = a.NodeSelector
 	a.fieldMap["replicas"] = a.Replicas
+	a.fieldMap["name"] = a.Name
 
 }
 
@@ -125,13 +125,13 @@ func (a appConfig) replaceDB(db *gorm.DB) appConfig {
 	return a
 }
 
-type appConfigHasOneDeploy struct {
+type appConfigHasManyDeploy struct {
 	db *gorm.DB
 
 	field.RelationField
 }
 
-func (a appConfigHasOneDeploy) Where(conds ...field.Expr) *appConfigHasOneDeploy {
+func (a appConfigHasManyDeploy) Where(conds ...field.Expr) *appConfigHasManyDeploy {
 	if len(conds) == 0 {
 		return &a
 	}
@@ -144,27 +144,27 @@ func (a appConfigHasOneDeploy) Where(conds ...field.Expr) *appConfigHasOneDeploy
 	return &a
 }
 
-func (a appConfigHasOneDeploy) WithContext(ctx context.Context) *appConfigHasOneDeploy {
+func (a appConfigHasManyDeploy) WithContext(ctx context.Context) *appConfigHasManyDeploy {
 	a.db = a.db.WithContext(ctx)
 	return &a
 }
 
-func (a appConfigHasOneDeploy) Session(session *gorm.Session) *appConfigHasOneDeploy {
+func (a appConfigHasManyDeploy) Session(session *gorm.Session) *appConfigHasManyDeploy {
 	a.db = a.db.Session(session)
 	return &a
 }
 
-func (a appConfigHasOneDeploy) Model(m *model.AppConfig) *appConfigHasOneDeployTx {
-	return &appConfigHasOneDeployTx{a.db.Model(m).Association(a.Name())}
+func (a appConfigHasManyDeploy) Model(m *model.AppConfig) *appConfigHasManyDeployTx {
+	return &appConfigHasManyDeployTx{a.db.Model(m).Association(a.Name())}
 }
 
-type appConfigHasOneDeployTx struct{ tx *gorm.Association }
+type appConfigHasManyDeployTx struct{ tx *gorm.Association }
 
-func (a appConfigHasOneDeployTx) Find() (result *model.AppDeploy, err error) {
+func (a appConfigHasManyDeployTx) Find() (result []*model.AppDeploy, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a appConfigHasOneDeployTx) Append(values ...*model.AppDeploy) (err error) {
+func (a appConfigHasManyDeployTx) Append(values ...*model.AppDeploy) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -172,7 +172,7 @@ func (a appConfigHasOneDeployTx) Append(values ...*model.AppDeploy) (err error) 
 	return a.tx.Append(targetValues...)
 }
 
-func (a appConfigHasOneDeployTx) Replace(values ...*model.AppDeploy) (err error) {
+func (a appConfigHasManyDeployTx) Replace(values ...*model.AppDeploy) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -180,7 +180,7 @@ func (a appConfigHasOneDeployTx) Replace(values ...*model.AppDeploy) (err error)
 	return a.tx.Replace(targetValues...)
 }
 
-func (a appConfigHasOneDeployTx) Delete(values ...*model.AppDeploy) (err error) {
+func (a appConfigHasManyDeployTx) Delete(values ...*model.AppDeploy) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -188,11 +188,11 @@ func (a appConfigHasOneDeployTx) Delete(values ...*model.AppDeploy) (err error) 
 	return a.tx.Delete(targetValues...)
 }
 
-func (a appConfigHasOneDeployTx) Clear() error {
+func (a appConfigHasManyDeployTx) Clear() error {
 	return a.tx.Clear()
 }
 
-func (a appConfigHasOneDeployTx) Count() int64 {
+func (a appConfigHasManyDeployTx) Count() int64 {
 	return a.tx.Count()
 }
 

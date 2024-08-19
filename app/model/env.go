@@ -13,8 +13,8 @@ type AppBaseConfig struct {
 
 type AppConfig struct {
 	AppBaseConfig `json:",inline" yaml:",inline"  gorm:"embedded"`
-	Name          string     `json:"name" yaml:"name" gorm:"primaryKey;uniqueIndex;not null"`
-	Deploy        *AppDeploy `json:"deploy,omitempty" yaml:"-" gorm:"foreignKey:AppName;references:Name"`
+	Name          string      `json:"name" yaml:"name" gorm:"primaryKey;uniqueIndex;not null"`
+	Deploy        []AppDeploy `json:"deploy,omitempty" yaml:"-" gorm:"foreignKey:AppName;references:Name"`
 }
 
 type AppDeploy struct {

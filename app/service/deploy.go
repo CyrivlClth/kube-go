@@ -143,21 +143,11 @@ func (d Deploy) ExportEnv(envName string) error {
 }
 
 func (d Deploy) ListApp(envName string) ([]*model.AppConfig, error) {
-	var data []*model.AppConfig
-	q := d.db
+	q := d.query.AppConfig.WithContext(context.Background())
 	if envName == "" {
-		q = q.Preload("Deploy")
+		q = q.Preload(d.query.AppConfig.Deploy)
 	} else {
-		q = q.Preload("Deploy", "env_name=?", envName)
+		q = q.Preload(d.query.AppConfig.Deploy.On(d.query.AppDeploy.EnvName.Eq(envName)))
 	}
-	err := q.Find(&data).Error
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
-}
-
-func (d Deploy) AddDeploy(dp *model.AppDeploy) error {
-	u := d.query.WithContext(context.Background()).AppDeploy
-	return u.Create(dp)
+	return q.Find()
 }

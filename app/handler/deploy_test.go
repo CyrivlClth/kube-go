@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/CyrivlClth/kube-go/app/query"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,6 +19,7 @@ func TestDeploy_Reload(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(":memory:"))
 	require.NoError(t, err)
 	db = db.Debug()
+	query.SetDefault(db)
 	router := gin.Default()
 	Register(router, db)
 	w := httptest.NewRecorder()
@@ -31,6 +33,7 @@ func TestDeploy_AddApp(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(":memory:"))
 	require.NoError(t, err)
 	db = db.Debug()
+	query.SetDefault(db)
 	router := gin.Default()
 	Register(router, db)
 	{
@@ -94,7 +97,7 @@ func TestDeploy_AddApp(t *testing.T) {
 		"postCmd":["-jar","./app.jar"],
 		"nodeSelector":{"t":"p"},
 		"replicas":2,
-		"deploy":{"appName":"gateway-service","envName":"values.yaml","image":"test","tag":"v2"}
+		"deploy":[{"appName":"gateway-service","envName":"values.yaml","image":"test","tag":"v2"}]
 		}]}`, w.Body.String())
 	}
 }
