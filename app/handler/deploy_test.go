@@ -43,7 +43,7 @@ func TestDeploy_AddApp(t *testing.T) {
 		assert.Equal(t, 200, w.Code)
 	}
 
-	s := `{"name":"gateway-service","maxCPUCount":2,"maxMemoryGB":2,"description":"A gateway service","preCmd":["java"],"args":null,"postCmd":["-jar","./app.jar"],"nodeSelector":{"t":"p"},"replicas":2}`
+	s := `{"name":"gateway-service","runType":"java-app","maxCPUCount":2,"maxMemoryGB":2,"description":"A gateway service","preCmd":["java"],"args":null,"postCmd":["-jar","./app.jar"],"nodeSelector":{"t":"p"},"replicas":2}`
 
 	{
 		var b bytes.Buffer
@@ -97,6 +97,7 @@ func TestDeploy_AddApp(t *testing.T) {
 		"postCmd":["-jar","./app.jar"],
 		"nodeSelector":{"t":"p"},
 		"replicas":2,
+		"runType":"java-app",
 		"deploy":[{"appName":"gateway-service","envName":"values.yaml","image":"test","tag":"v2"}]
 		}]}`, w.Body.String())
 	}
