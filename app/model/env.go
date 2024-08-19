@@ -12,7 +12,7 @@ type AppBaseConfig struct {
 }
 
 type AppConfig struct {
-	Name          string        `json:"name" yaml:"name" gorm:"primaryKey;uniqueIndex;not null"`
+	Name          string `json:"name" yaml:"name" gorm:"primaryKey;uniqueIndex;not null"`
 	AppBaseConfig `json:",inline" yaml:",inline"  gorm:"embedded"`
 }
 
@@ -24,13 +24,13 @@ type AppDeploy struct {
 }
 
 type EnvConfig struct {
-	AppBaseConfig   AppBaseConfig `yaml:",inline" gorm:"embedded"`
-	FileName        string        `json:"-" yaml:"-" gorm:"primaryKey;uniqueIndex;not null"`
-	Namespace       string        `json:"namespace" yaml:"namespace" gorm:"not null"`
-	OverrideNode    bool          `json:"overrideNode" yaml:"overrideNode" gorm:"not null"`
-	GatewayName     string        `json:"gatewayName" yaml:"gatewayName" gorm:"not null"`
-	GatewayNodePort int           `json:"gatewayNodePort" yaml:"gatewayNodePort" gorm:"not null"`
-	HostPort        int           `json:"hostPort" yaml:"hostPort" gorm:"not null"`
-	EnvValues       DatabaseMap   `json:"envValues" yaml:"envValues" gorm:"not null"`
-	UserGuide       DatabaseMap   `json:"-" yaml:"-" gorm:"not null"`
+	AppBaseConfig   `json:",inline" yaml:",inline" gorm:"embedded"`
+	FileName        string      `json:"-" yaml:"-" gorm:"primaryKey;uniqueIndex;not null"`
+	Namespace       string      `json:"namespace" yaml:"namespace" gorm:"not null"`
+	OverrideNode    bool        `json:"overrideNode" yaml:"overrideNode" gorm:"not null"`
+	GatewayName     string      `json:"gatewayName" yaml:"gatewayName" gorm:"not null"`
+	GatewayNodePort int         `json:"gatewayNodePort" yaml:"gatewayNodePort" gorm:"not null"`
+	HostPort        int         `json:"hostPort" yaml:"hostPort" gorm:"not null"`
+	EnvValues       DatabaseMap `json:"envValues" yaml:"envValues" gorm:"not null"`
+	UserGuide       DatabaseMap `json:"-" yaml:"-" gorm:"not null"`
 }
