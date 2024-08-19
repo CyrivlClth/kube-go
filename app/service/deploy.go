@@ -43,7 +43,7 @@ func (d Deploy) Load(path string) error {
 	}
 	_, conf.EnvConfig.FileName = filepath.Split(root)
 	conf.EnvConfig.UserGuide = conf.UserGuide
-	err = d.db.Create(&(conf.EnvConfig)).Error
+	err = d.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(&(conf.EnvConfig)).Error
 
 	return err
 }

@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestDeploy_load(t *testing.T) {
+func TestDeploy_Load(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
 	d := NewDeploy(db.Debug())
@@ -18,6 +18,8 @@ func TestDeploy_load(t *testing.T) {
 	conf := model.EnvConfig{}
 	assert.NoError(t, db.Where("file_name=?", "values.yaml").First(&conf).Error)
 	assert.EqualValues(t, "values.yaml", conf.FileName)
+	err = d.Load("examples/values.yaml")
+	assert.NoError(t, err)
 }
 
 func TestDeploy_exportEnv(t *testing.T) {
