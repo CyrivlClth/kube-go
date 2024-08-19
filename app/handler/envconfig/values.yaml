@@ -1,0 +1,37 @@
+envConfig:
+  maxCPUCount: 0
+  maxMemoryGB: 2
+  description: ""
+  preCmd:
+    - tini
+    - java
+  args: []
+  postCmd:
+    - -jar
+    - ./app.jar
+  nodeSelector: {}
+  replicas: 0
+  namespace: ""
+  overrideNode: false
+  gatewayName: gateway-service
+  gatewayNodePort: 9000
+  hostPort: 31000
+  envValues: {}
+userGuide: {}
+apps:
+  - maxCPUCount: 2
+    maxMemoryGB: 2
+    description: 网关服务
+    preCmd:
+      - tini
+      - java
+    args: []
+    postCmd:
+      - -jar
+      - ./app.jar
+    nodeSelector:
+      resources.type/base: "true"
+    replicas: 3
+    name: gateway-service
+    image: nginx-alpine
+    tag: v2

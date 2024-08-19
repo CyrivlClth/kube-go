@@ -60,3 +60,24 @@ func (d Deploy) AddApp(c *Context) error {
 	c.JSON(r)
 	return nil
 }
+
+func (d Deploy) ListApp(c *Context) error {
+	apps, err := d.svc.ListApp("")
+	if err != nil {
+		return err
+	}
+	c.JSON(apps)
+	return nil
+}
+
+func (d Deploy) DeployApp(c *Context) error {
+	var r model.AppDeploy
+	if err := c.ShouldBindJSON(&r); err != nil {
+		return err
+	}
+	if err := d.svc.DeployApp(&r); err != nil {
+		return err
+	}
+	c.JSON(r)
+	return nil
+}

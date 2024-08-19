@@ -13,5 +13,7 @@ func Register(e *gin.Engine, db *gorm.DB) {
 		hand := NewDeploy(svc)
 		apiG.GET("/-/reload", WrapHandle(hand.Reload))
 		apiG.POST("/app-config", WrapHandle(hand.AddApp))
+		apiG.GET("/app-config", WrapHandle(hand.ListApp))
+		apiG.POST("/app-deploy", WrapHandle(hand.DeployApp))
 	}
 }

@@ -1,11 +1,13 @@
 package service
 
 import (
+	"context"
 	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/CyrivlClth/kube-go/app/model"
+	"github.com/CyrivlClth/kube-go/app/query"
 	"github.com/jinzhu/copier"
 	"gopkg.in/yaml.v3"
 	"gorm.io/gorm"
@@ -13,16 +15,19 @@ import (
 )
 
 type Deploy struct {
-	db *gorm.DB
+	db    *gorm.DB
+	query *query.Query
 }
 
 func NewDeploy(db *gorm.DB) *Deploy {
+	query := query.Use(db)
 	err := db.AutoMigrate(&model.AppConfig{}, &model.EnvConfig{}, &model.AppDeploy{})
 	if err != nil {
 		panic(err)
 	}
 	return &Deploy{
-		db: db,
+		db:    db,
+		query: query,
 	}
 }
 
@@ -135,4 +140,24 @@ func (d Deploy) ExportEnv(envName string) error {
 	e.SetIndent(2)
 	err = e.Encode(data)
 	return err
+}
+
+func (d Deploy) ListApp(envName string) ([]*model.AppConfig, error) {
+	var data []*model.AppConfig
+	q := d.db
+	if envName == "" {
+		q = q.Preload("Deploy")
+	} else {
+		q = q.Preload("Deploy", "env_name=?", envName)
+	}
+	err := q.Find(&data).Error
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (d Deploy) AddDeploy(dp *model.AppDeploy) error {
+	u := d.query.WithContext(context.Background()).AppDeploy
+	return u.Create(dp)
 }
