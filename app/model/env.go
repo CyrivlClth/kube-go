@@ -17,8 +17,8 @@ type AppConfig struct {
 }
 
 type AppDeploy struct {
-	AppName string `json:"appName" yaml:"appName" gorm:"not null"`
-	EnvName string `json:"envName" yaml:"envName" gorm:"not null"`
+	AppName string `json:"appName" yaml:"appName" gorm:"not null;uniqueIndex:uidx_app_name_env_name"`
+	EnvName string `json:"envName" yaml:"envName" gorm:"not null;uniqueIndex:uidx_app_name_env_name"`
 	Image   string `json:"image" yaml:"image" gorm:"not null"`
 	Tag     string `json:"tag" yaml:"tag" gorm:"not null"`
 }

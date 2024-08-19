@@ -100,7 +100,7 @@ func (d Deploy) ExportEnv(envName string) error {
 		names = append(names, dp.AppName)
 	}
 	var apps []model.AppConfig
-	err = d.db.Where("name in (?)", names).Find(&apps).Error
+	err = d.db.Where("name IN (?)", names).Find(&apps).Error
 	if err != nil {
 		return err
 	}
