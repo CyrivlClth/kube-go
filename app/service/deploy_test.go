@@ -40,7 +40,7 @@ func TestDeploy_DeployApp_SameNameUpsert(t *testing.T) {
 			PreCmd:      []string{"tini", "java"},
 			Args:        []string{},
 			PostCmd:     []string{"-jar", "./app.jar"},
-			NodeSelector: map[string]any{
+			NodeSelector: map[string]string{
 				"resources.type/base": "true",
 			},
 			Replicas: 3,
@@ -110,7 +110,7 @@ func TestDeploy_ExportEnv(t *testing.T) {
 			PreCmd:      []string{"tini", "java"},
 			Args:        []string{},
 			PostCmd:     []string{"-jar", "./app.jar"},
-			NodeSelector: map[string]any{
+			NodeSelector: map[string]string{
 				"resources.type/base": "true",
 			},
 			Replicas: 3,
