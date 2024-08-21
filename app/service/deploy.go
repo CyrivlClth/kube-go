@@ -1,33 +1,28 @@
 package service
 
 import (
-	"context"
 	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/CyrivlClth/kube-go/app/model"
 	"github.com/CyrivlClth/kube-go/app/query"
-	"github.com/jinzhu/copier"
 	"gopkg.in/yaml.v3"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 type Deploy struct {
-	db    *gorm.DB
-	query *query.Query
+	db *gorm.DB
 }
 
 func NewDeploy(db *gorm.DB) *Deploy {
-	query := query.Use(db)
 	err := db.AutoMigrate(&model.AppConfig{}, &model.EnvConfig{}, &model.AppDeploy{})
 	if err != nil {
 		panic(err)
 	}
 	return &Deploy{
-		db:    db,
-		query: query,
+		db: db,
 	}
 }
 
@@ -48,41 +43,31 @@ func (d Deploy) Load(path string) error {
 	}
 	_, conf.EnvConfig.FileName = filepath.Split(root)
 	conf.EnvConfig.UserGuide = conf.UserGuide
-	err = d.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(&(conf.EnvConfig)).Error
-
-	return err
-}
-
-type App struct {
-	MaxCPUCount  int            `json:"maxCPUCount" yaml:"maxCPUCount" gorm:"not null"`
-	MaxMemoryGB  int            `json:"maxMemoryGB" yaml:"maxMemoryGB" gorm:"not null"`
-	Description  string         `json:"description" yaml:"description" gorm:"not null"`
-	PreCmd       []string       `json:"preCmd" yaml:"preCmd" gorm:"not null"`
-	Args         []string       `json:"args" yaml:"args" gorm:"not null"`
-	PostCmd      []string       `json:"postCmd" yaml:"postCmd" gorm:"not null"`
-	NodeSelector map[string]any `json:"nodeSelector" yaml:"nodeSelector" gorm:"not null"`
-	Replicas     int            `json:"replicas" yaml:"replicas" gorm:"not null"`
-	Name         string         `json:"name" yaml:"name"`
-	Image        string         `yaml:"image"`
-	Tag          string         `yaml:"tag"`
+	return query.EnvConfig.
+		Clauses(clause.OnConflict{UpdateAll: true}).
+		Create(&(conf.EnvConfig))
 }
 
 func (d Deploy) AddApp(app *model.AppConfig) error {
-	return d.db.Create(app).Error
+	return query.AppConfig.Create(app)
 }
 
 func (d Deploy) DeployApp(dp *model.AppDeploy) error {
-	app := model.AppConfig{}
-	err := d.db.Where("name=?", dp.AppName).First(&app).Error
+	_, err := query.AppConfig.
+		Where(query.AppConfig.Name.Eq(dp.AppName)).
+		First()
 	if err != nil {
 		return err
 	}
-	env := model.EnvConfig{}
-	err = d.db.Where("file_name=?", dp.EnvName).First(&env).Error
+	_, err = query.EnvConfig.
+		Where(query.EnvConfig.FileName.Eq(dp.EnvName)).
+		First()
 	if err != nil {
 		return err
 	}
-	err = d.db.Clauses(clause.OnConflict{UpdateAll: true}).Create(dp).Error
+	err = query.AppDeploy.
+		Clauses(clause.OnConflict{UpdateAll: true}).
+		Create(dp)
 	if err != nil {
 		return err
 	}
@@ -90,46 +75,33 @@ func (d Deploy) DeployApp(dp *model.AppDeploy) error {
 }
 
 func (d Deploy) ExportEnv(envName string) error {
-	env := model.EnvConfig{}
-	err := d.db.Where("file_name=?", envName).First(&env).Error
+	env, err := query.EnvConfig.
+		Where(query.EnvConfig.FileName.Eq(envName)).
+		First()
 	if err != nil {
 		return err
 	}
-	var ds []model.AppDeploy
-	err = d.db.Where("env_name=?", envName).Find(&ds).Error
+	type App struct {
+		model.AppDeploy
+		model.AppConfig
+	}
+	var apps []App
+	err = query.AppDeploy.
+		Select(query.AppDeploy.ALL, query.AppConfig.ALL).
+		Where(query.AppDeploy.EnvName.Eq(envName)).
+		LeftJoin(query.AppConfig, query.AppConfig.Name.EqCol(query.AppDeploy.AppName)).
+		Scan(&apps)
 	if err != nil {
 		return err
-	}
-	names := make([]string, 0, len(ds))
-	for _, dp := range ds {
-		names = append(names, dp.AppName)
-	}
-	var apps []model.AppConfig
-	err = d.db.Where("name IN (?)", names).Find(&apps).Error
-	if err != nil {
-		return err
-	}
-	appMap := make(map[string]model.AppConfig)
-	for _, app := range apps {
-		appMap[app.Name] = app
 	}
 	var data struct {
-		EnvConfig model.EnvConfig `yaml:"envConfig"`
-		UserGuide map[string]any  `yaml:"userGuide"`
-		Apps      []App           `yaml:"apps"`
+		EnvConfig *model.EnvConfig `yaml:"envConfig"`
+		UserGuide map[string]any   `yaml:"userGuide"`
+		Apps      []App            `yaml:"apps"`
 	}
 	data.EnvConfig = env
 	data.UserGuide = env.UserGuide
-	for _, dp := range ds {
-		c := App{}
-		err = copier.Copy(&c, appMap[dp.AppName])
-		if err != nil {
-			return err
-		}
-		c.Image = dp.Image
-		c.Tag = dp.Tag
-		data.Apps = append(data.Apps, c)
-	}
+	data.Apps = apps
 	log.Printf("%+v", data)
 	f, err := os.Create(data.EnvConfig.FileName)
 	if err != nil {
@@ -143,11 +115,9 @@ func (d Deploy) ExportEnv(envName string) error {
 }
 
 func (d Deploy) ListApp(envName string) ([]*model.AppConfig, error) {
-	q := d.query.AppConfig.WithContext(context.Background())
+	q := query.AppConfig
 	if envName == "" {
-		q = q.Preload(d.query.AppConfig.Deploy)
-	} else {
-		q = q.Preload(d.query.AppConfig.Deploy.On(d.query.AppDeploy.EnvName.Eq(envName)))
+		return q.Preload(query.AppConfig.Deploy).Find()
 	}
-	return q.Find()
+	return q.Preload(query.AppConfig.Deploy.On(query.AppDeploy.EnvName.Eq(envName))).Find()
 }

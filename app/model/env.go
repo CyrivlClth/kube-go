@@ -12,7 +12,7 @@ type AppBaseConfig struct {
 }
 
 type AppConfig struct {
-	AppBaseConfig `json:",inline" yaml:",inline"  gorm:"embedded"`
+	AppBaseConfig `yaml:",inline"  gorm:"embedded"`
 	Name          string      `json:"name" yaml:"name" gorm:"primaryKey;uniqueIndex;not null"`
 	RunType       string      `json:"runType" yaml:"runType" gorm:"not null"`
 	Deploy        []AppDeploy `json:"deploy,omitempty" yaml:"-" gorm:"foreignKey:AppName;references:Name"`
@@ -26,7 +26,7 @@ type AppDeploy struct {
 }
 
 type EnvConfig struct {
-	AppBaseConfig   `json:",inline" yaml:",inline" gorm:"embedded"`
+	AppBaseConfig   `yaml:",inline"`
 	FileName        string            `json:"-" yaml:"-" gorm:"primaryKey;uniqueIndex;not null"`
 	Namespace       string            `json:"namespace" yaml:"namespace" gorm:"not null"`
 	OverrideNode    bool              `json:"overrideNode" yaml:"overrideNode" gorm:"not null"`

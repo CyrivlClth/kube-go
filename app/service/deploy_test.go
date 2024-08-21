@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/CyrivlClth/kube-go/app/model"
+	"github.com/CyrivlClth/kube-go/app/query"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -12,6 +13,7 @@ import (
 func TestDeploy_Load_UpsertOK(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
+	query.SetDefault(db.Debug())
 	d := NewDeploy(db.Debug())
 	err = d.Load("examples/values.yaml")
 	assert.NoError(t, err)
@@ -25,6 +27,7 @@ func TestDeploy_Load_UpsertOK(t *testing.T) {
 func TestDeploy_DeployApp_SameNameUpsert(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
+	query.SetDefault(db.Debug())
 	d := NewDeploy(db.Debug())
 	assert.NoError(t, d.Load("examples/values.yaml"))
 	var c int64
@@ -95,6 +98,7 @@ func TestDeploy_DeployApp_SameNameUpsert(t *testing.T) {
 func TestDeploy_ExportEnv(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
+	query.SetDefault(db.Debug())
 	d := NewDeploy(db.Debug())
 	err = d.Load("examples/values.yaml")
 	assert.NoError(t, err)

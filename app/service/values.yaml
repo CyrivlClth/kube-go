@@ -19,19 +19,24 @@ envConfig:
   envValues: {}
 userGuide: {}
 apps:
-  - maxCPUCount: 2
-    maxMemoryGB: 2
-    description: 网关服务
-    preCmd:
-      - tini
-      - java
-    args: []
-    postCmd:
-      - -jar
-      - ./app.jar
-    nodeSelector:
-      resources.type/base: "true"
-    replicas: 3
-    name: gateway-service
-    image: nginx-alpine
-    tag: v2
+  - appdeploy:
+      appName: gateway-service
+      envName: values.yaml
+      image: nginx-alpine
+      tag: v2
+    appconfig:
+      maxCPUCount: 2
+      maxMemoryGB: 2
+      description: 网关服务
+      preCmd:
+        - tini
+        - java
+      args: []
+      postCmd:
+        - -jar
+        - ./app.jar
+      nodeSelector:
+        resources.type/base: "true"
+      replicas: 3
+      name: gateway-service
+      runType: ""
